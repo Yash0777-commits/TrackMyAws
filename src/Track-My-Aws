@@ -1,0 +1,110 @@
+#!/bin/bash
+
+###############################################################################
+# Author: Yash Kumbhar
+# Date: 21/12/24
+# Version: v0.0.1
+#
+# Script to automate the process of listing all resources in an AWS account.
+# Logs the output to a timestamped log file in the specified directory.
+#
+# Usage: ./TrackMyAws.sh <aws_region> <aws_service>
+# Example: ./TrackMyAws.sh us-east-1 ec2
+###############################################################################
+
+# Configuration
+LOG_DIR="./logs"  # Directory to store log files
+LOG_FILE="$LOG_DIR/aws_resources_$(date +%F).log"
+
+# Ensure the log directory exists
+mkdir -p "$LOG_DIR"
+
+# Check if the required number of arguments are passed
+if [ $# -ne 2 ]; then
+    echo "Usage: ./TrackMyAws.sh <aws_region> <aws_service>"
+    echo "Example: ./TrackMyAws.sh us-east-1 ec2"
+    exit 1
+fi
+
+# Assign arguments to variables and convert the service name to lowercase
+aws_region=$1
+aws_service=$(echo "$2" | tr '[:upper:]' '[:lower:]')
+
+# Check if the AWS CLI is installed
+if ! command -v aws &> /dev/null; then
+    echo "AWS CLI is not installed. Please install the AWS CLI and try again."
+    exit 1
+fi
+
+# Check if the AWS CLI is configured
+if [ ! -d ~/.aws ]; then
+    echo "AWS CLI is not configured. Please configure the AWS CLI and try again."
+    exit 1
+fi
+
+# List the resources based on the service
+case $aws_service in
+    ec2)
+        echo "Listing EC2 Instances in $aws_region" | tee -a "$LOG_FILE"
+        aws ec2 describe-instances --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    rds)
+        echo "Listing RDS Instances in $aws_region" | tee -a "$LOG_FILE"
+        aws rds describe-db-instances --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    s3)
+        echo "Listing S3 Buckets" | tee -a "$LOG_FILE"
+        aws s3api list-buckets | tee -a "$LOG_FILE"
+        ;;
+    cloudfront)
+        echo "Listing CloudFront Distributions" | tee -a "$LOG_FILE"
+        aws cloudfront list-distributions | tee -a "$LOG_FILE"
+        ;;
+    vpc)
+        echo "Listing VPCs in $aws_region" | tee -a "$LOG_FILE"
+        aws ec2 describe-vpcs --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    iam)
+        echo "Listing IAM Users" | tee -a "$LOG_FILE"
+        aws iam list-users | tee -a "$LOG_FILE"
+        ;;
+    route53)
+        echo "Listing Route53 Hosted Zones" | tee -a "$LOG_FILE"
+        aws route53 list-hosted-zones | tee -a "$LOG_FILE"
+        ;;
+    cloudwatch)
+        echo "Listing CloudWatch Alarms in $aws_region" | tee -a "$LOG_FILE"
+        aws cloudwatch describe-alarms --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    cloudformation)
+        echo "Listing CloudFormation Stacks in $aws_region" | tee -a "$LOG_FILE"
+        aws cloudformation describe-stacks --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    lambda)
+        echo "Listing Lambda Functions in $aws_region" | tee -a "$LOG_FILE"
+        aws lambda list-functions --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    sns)
+        echo "Listing SNS Topics in $aws_region" | tee -a "$LOG_FILE"
+        aws sns list-topics --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    sqs)
+        echo "Listing SQS Queues in $aws_region" | tee -a "$LOG_FILE"
+        aws sqs list-queues --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    dynamodb)
+        echo "Listing DynamoDB Tables in $aws_region" | tee -a "$LOG_FILE"
+        aws dynamodb list-tables --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    ebs)
+        echo "Listing EBS Volumes in $aws_region" | tee -a "$LOG_FILE"
+        aws ec2 describe-volumes --region "$aws_region" | tee -a "$LOG_FILE"
+        ;;
+    *)
+        echo "Invalid service. Please enter a valid service." | tee -a "$LOG_FILE"
+        exit 1
+        ;;
+esac
+
+echo "Script execution completed. Log file saved at: $LOG_FILE"
+
