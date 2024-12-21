@@ -1,4 +1,4 @@
-# TrackMyAws
+# Track-My-Aws
 
 TrackMyAws is a Bash script designed to automate the process of listing resources in an AWS account for specific services and regions. The script logs the details into timestamped files for easy tracking and management.
 
